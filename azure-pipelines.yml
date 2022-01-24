@@ -17,13 +17,16 @@ variables:
 steps:
 - task: NuGetToolInstaller@1
   name: InstallBuildTools
+  displayName: "Install Build Tools"
 
 - task: NuGetCommand@2
   name: RestoreNugetDependencies
+  displayName: "Restore Nuget Dependencies"
   inputs:
     restoreSolution: '$(solution)'
 - task: VSBuild@1
   name: BuildLibraryAndPackages
+  displayName: "Build Library And Packages"
   inputs:
     solution: '$(solution)'
     platform: '$(buildPlatform)'
@@ -34,6 +37,7 @@ steps:
 #     configuration: '$(buildConfiguration)'
 - task: NuGetCommand@2
   name: PublishPackagesToLocalNuget
+  displayName: "Publish Packages To Local Nuget"
   inputs:
     command: 'push'
     packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
