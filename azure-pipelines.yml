@@ -40,6 +40,6 @@ steps:
   displayName: "Publish Packages To Local Nuget"
   inputs:
     command: 'push'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    packagesToPush: '$(Agent.BuildDirectory)/**/*.nupkg;!$(Agent.BuildDirectory)/**/*.symbols.nupkg'
     nuGetFeedType: 'internal'
     publishVstsFeed: '759dced1-f8a3-4bb2-a094-c047b91131d9/f1926041-c8dd-4269-8baf-9a25d904d81a'
