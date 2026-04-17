@@ -207,7 +207,8 @@ public class EfCoreLookupStreamNode<TIn, TValue, TEntity, TValueOut, TKey, TOut>
                         GetQuery = args.GetQuery
                     });
                 }) ?? throw new InvalidOperationException("Memory cache failure to get or create the matcher");
-                using var ctx = this.ExecutionContext.Services.GetDbContext(args.KeyedConnection);
+                using var dbScope = this.ExecutionContext.Services.CreateDbContextScope(args.KeyedConnection);
+                var ctx = dbScope.Context;
                 TEntity? entity = default;
                 var val = args.GetInputValue(elt);
                 entity = matcher.GetMatch(val, ctx);

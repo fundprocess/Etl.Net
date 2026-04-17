@@ -101,7 +101,8 @@ public class DeleteEntityFrameworkCoreStreamNode<TIn, TValue, TEntity>(string na
         var matchingS = args.InputStream.Observable
             .Map(i =>
             {
-                using var ctx = this.ExecutionContext.Services.GetDbContext(args.KeyedConnection);
+                using var dbScope = this.ExecutionContext.Services.CreateDbContextScope(args.KeyedConnection);
+                var ctx = dbScope.Context;
                 var val = args.GetValue(i);
                 ctx.Set<TEntity>()
                     .Where(args.Match.ApplyPartialLeft(val))

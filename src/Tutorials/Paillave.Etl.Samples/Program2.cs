@@ -14,6 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Paillave.Etl.FromConfigurationConnectors;
 using Paillave.Etl.Mail;
 using Paillave.Etl.GraphApi;
+using Paillave.Etl.Sftp;
 
 namespace Paillave.Etl.Samples;
 
@@ -21,17 +22,49 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        var tmp = new GraphApi.GraphApiMessaging(new GraphApiAdapterConnectionParameters
+        var fileProvider = new SftpFileValueProvider("IN", "Input", "Sftp",
+        new()
         {
-            From = "support@fundprocess.lu",
-            FromDisplayName = "FundProcess in Development",
-            MaxAttempts = 3,
+            Server = "localhost",
+            PortNumber = 2222,
+            Login = "user",
+            Password = "password",
+        }, new()
+        {
+            SubFolder = "files/positions",
+            FileNamePattern = "*"
         });
-        tmp.Send(null, "Test subject", "This is the body", false, [new MessageContact
-            {
-                Email="stephane.royer@fundprocess.lu",
-                DisplayName="Recipient Name"
-            }]);
+
+        var currentIterationFiles = new List<FileReference>();
+        fileProvider.Provide(new object(), (_, fileReference) => currentIterationFiles.Add(fileReference), default);
+
+        foreach (var file in currentIterationFiles)
+        {
+            var fileValue = fileProvider.Provide(file.FileSpecific);
+            var tmp = fileValue.GetContent();
+        }
+
+var fileProcessor = new FileSystemFileValueProcessor("OUT", "Output", Path.Combine(Environment.CurrentDirectory, "InputFiles"));
+fileProcessor.Process(new InMemoryFileValue(new MemoryStream(), "TestFile.txt"),  i=>{},default);
+
+
+        // new FileValueConnectors()
+        //                     .Register(new FileSystemFileValueProvider("PTF", "Portfolios", Path.Combine(Environment.CurrentDirectory, "InputFiles"), "*.Portfolios.csv"))
+        //                     .Register(new FileSystemFileValueProvider("POS", "Positions", Path.Combine(Environment.CurrentDirectory, "InputFiles"), "*.Positions.csv"))
+        //                     .Register(new FileSystemFileValueProcessor("OUT", "Result", Path.Combine(Environment.CurrentDirectory, "InputFiles"))),
+
+
+        // var tmp = new GraphApi.GraphApiMessaging(new GraphApiAdapterConnectionParameters
+        // {
+        //     From = "support@fundprocess.lu",
+        //     FromDisplayName = "FundProcess in Development",
+        //     MaxAttempts = 3,
+        // });
+        // tmp.Send(null, "Test subject", "This is the body", false, [new MessageContact
+        //     {
+        //         Email="stephane.royer@fundprocess.lu",
+        //         DisplayName="Recipient Name"
+        //     }]);
         // var tmp = new SmtpMessaging(new MailAdapterConnectionParameters
         // {
         //     From = "support@fundprocess.lu",

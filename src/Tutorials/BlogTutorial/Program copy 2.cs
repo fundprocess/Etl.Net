@@ -27,6 +27,7 @@ class Program3
     private static void DefineProcess(ISingleStream<string> contextStream)
     {
         contextStream
+            // .Do()
             .SelectResolved("get some values", (context, services) => $"{context}-{services.GetRequiredService<SomeExternalValue>().AStringValue}:{services.GetRequiredService<SomeExternalValue>().AnIntValue}");
     }
 }

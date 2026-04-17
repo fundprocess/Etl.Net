@@ -247,7 +247,8 @@ public class EfCoreSaveStreamNode<TInEf, TIn, TOut>(string name, EfCoreSaveArgs<
     }
     private void ProcessChunk(List<(TIn Input, TInEf Entity)> i)
     {
-        using var ctx = this.ExecutionContext.Services.GetDbContext(args.KeyedConnection);
+        using var dbScope = this.ExecutionContext.Services.CreateDbContextScope(args.KeyedConnection);
+        var ctx = dbScope.Context;
 
         ProcessBatchAsync(i, ctx, this.Args.BulkLoadMode, Args.SourceStream.Observable.CancellationToken)
             .WaitAsync(Args.SourceStream.Observable.CancellationToken).GetAwaiter().GetResult();

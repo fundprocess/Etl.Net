@@ -32,7 +32,8 @@ public class EfCoreValuesProvider<TIn, TOut>(EfCoreValuesProviderArgs<TIn, TOut>
     public override ProcessImpact MemoryFootPrint => ProcessImpact.Light;
     public override void PushValues(TIn input, Action<TOut> push, CancellationToken cancellationToken, IExecutionContext context)
     {
-        using var ctx = context.Services.GetDbContext(_args.ConnectionKey);
+        using var dbScope = context.Services.CreateDbContextScope(_args.ConnectionKey);
+        var ctx = dbScope.Context;
 
         if (_args.StreamMode)
         {
@@ -59,7 +60,8 @@ public class EfCoreSingleValueProvider<TIn, TOut>(EfCoreSingleValueProviderArgs<
     public override ProcessImpact MemoryFootPrint => ProcessImpact.Light;
     public override void PushValues(TIn input, Action<TOut> push, CancellationToken cancellationToken, IExecutionContext context)
     {
-        using var ctx = context.Services.GetDbContext(_args.ConnectionKey);
+        using var dbScope = context.Services.CreateDbContextScope(_args.ConnectionKey);
+        var ctx = dbScope.Context;
         var res = _args.GetQuery(ctx, input).FirstOrDefault();
         push(res);
     }
@@ -78,7 +80,8 @@ public class EfCoreSelectSingleStreamNode<TIn, TOut>(string name, EfCoreSingleVa
     {
         var obs = args.Stream.Observable.Map(input =>
         {
-            using var ctx = args.Stream.SourceNode.ExecutionContext.Services.GetDbContext(args.ConnectionKey);
+            using var dbScope = args.Stream.SourceNode.ExecutionContext.Services.CreateDbContextScope(args.ConnectionKey);
+            var ctx = dbScope.Context;
             var invoker = args.Stream.SourceNode.ExecutionContext;
             var res = args.GetQuery(ctx, input).FirstOrDefault();
             return res;

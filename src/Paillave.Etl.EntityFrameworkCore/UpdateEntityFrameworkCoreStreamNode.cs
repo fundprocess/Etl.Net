@@ -38,8 +38,8 @@ public class UpdateEntityFrameworkCoreStreamNode<TEntity, TSource>(string name, 
             .Chunk(args.BatchSize)
             .Do(i =>
             {
-                using var ctx = this.ExecutionContext.Services.GetDbContext(args.ConnectionKey);
-                ProcessBatch(i.ToList(), ctx, args.BulkLoadMode);
+                using var dbScope = this.ExecutionContext.Services.CreateDbContextScope(args.ConnectionKey);
+                ProcessBatch(i.ToList(), dbScope.Context, args.BulkLoadMode);
             })
             .FlatMap((i, ct) => PushObservable.FromEnumerable(i, ct));
         return base.CreateUnsortedStream(ret);
